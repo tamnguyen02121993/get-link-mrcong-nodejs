@@ -21,6 +21,8 @@ const mrcongService = {
           href: item.getAttribute("href"),
         });
       }
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 's-max-age=60, stale-while-revalidate');
       res.status(200).json(textCategories);
     } catch (error) {
       res.status(400).json([]);
@@ -67,7 +69,8 @@ const mrcongService = {
           category: defaultCategory,
         });
       }
-
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 's-max-age=60, stale-while-revalidate');
       res.status(200).json(links);
     } catch (error) {
       res.status(400).json([]);
@@ -87,6 +90,8 @@ const mrcongService = {
       const { window } = new JSDOM(rawData);
       const parsedLink = window.document.querySelector("div.box.info + p > a");
 
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 's-max-age=60, stale-while-revalidate');
       res.status(200).json(parsedLink.getAttribute("href"));
     } catch (error) {
       res.status(400).json("");
