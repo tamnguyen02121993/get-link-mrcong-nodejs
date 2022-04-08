@@ -14,6 +14,8 @@ app.use(morgan("common"));
 // Routes
 app.use("/api", mrcongRoutes);
 
-app.listen(process.env.SERVER_PORT, () => {
-  console.log(`Server running on ${process.env.SERVER_PORT} port!`);
+const port = process.env.SERVER_PORT || 11000;
+
+app.listen(port, () => {
+  console.log(`Server running on ${port} port!`);
 });
