@@ -150,7 +150,7 @@ const mrcongService = {
         return `${infoValid[i]} ${x.data}`;
       });
       res.setHeader("Content-Type", "application/json");
-      // res.setHeader("Cache-Control", "s-max-age=60, stale-while-revalidate");
+      res.setHeader("Cache-Control", "s-max-age=60, stale-while-revalidate");
       res.status(200).json({
         downloadLink: downloadLink.getAttribute("href"),
         imageList,
