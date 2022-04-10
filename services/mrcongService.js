@@ -132,11 +132,11 @@ const mrcongService = {
       }
 
       const infoValid = [
-        "Tên bộ ảnh:",
-        "Người mẫu:",
-        "Tổng số ảnh:",
-        "Dung lượng:",
-        "Kích cỡ ảnh:",
+        "Gallery Name:",
+        "Model Name:",
+        "Total Images:",
+        "Size:",
+        "Image Dimension:",
       ];
       const invalidText = ["\n", " "];
       const validIndex = 1;
