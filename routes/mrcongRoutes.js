@@ -3,6 +3,6 @@ const { mrcongService } = require("../services");
 
 router.get("/categories", mrcongService.fetchCategories);
 router.get("/category/:category/page/:page", mrcongService.fetchPage);
-router.get("/generate", mrcongService.generateLink);
+router.get("/detail", mrcongService.fetchDetailPage);
 
 module.exports = router;

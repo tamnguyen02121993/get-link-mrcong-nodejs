@@ -21,8 +21,8 @@ const mrcongService = {
           href: item.getAttribute("href"),
         });
       }
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Cache-Control', 's-max-age=60, stale-while-revalidate');
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Cache-Control", "s-max-age=60, stale-while-revalidate");
       res.status(200).json(textCategories);
     } catch (error) {
       res.status(400).json([]);
@@ -64,35 +64,98 @@ const mrcongService = {
         links.push({
           title: item.textContent,
           href: item.getAttribute("href"),
-          image: image.getAttribute("src"),
+          coverImage: image.getAttribute("src"),
           page: pageNumber,
           category: defaultCategory,
         });
       }
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Cache-Control', 's-max-age=60, stale-while-revalidate');
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Cache-Control", "s-max-age=60, stale-while-revalidate");
       res.status(200).json(links);
     } catch (error) {
       res.status(400).json([]);
     }
   },
-  async generateLink(req, res) {
+  async fetchDetailPage(req, res) {
     const { link } = req.query;
     if (!link) {
       res.status(400).json("");
     }
 
     try {
+      // First page
       const rawData = await httpClient.get(link, {
         responseType: "text/html",
       });
 
       const { window } = new JSDOM(rawData);
-      const parsedLink = window.document.querySelector("div.box.info + p > a");
+      const downloadLink = window.document.querySelector(
+        "div.box.info + p > a"
+      );
+      const totalPageElements = window.document.querySelectorAll(
+        ".page-link > .post-page-numbers"
+      );
+      const imagesFirstPageElements = window.document.querySelectorAll(
+        "div.box.info + p + p > img"
+      );
+      const imageList = [];
 
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Cache-Control', 's-max-age=60, stale-while-revalidate');
-      res.status(200).json(parsedLink.getAttribute("href"));
+      // Get all images from first page
+      for (let index = 0; index < imagesFirstPageElements.length; index++) {
+        imageList.push(imagesFirstPageElements[index].getAttribute("src"));
+      }
+
+      const promiseList = [];
+      const totalPages = totalPageElements.length / 2;
+      // Don't get images from page 1
+      for (let index = 1; index < totalPages; index++) {
+        const pageLink = `${link}${index + 1}/`;
+
+        promiseList.push(
+          httpClient.get(pageLink, {
+            responseType: "text/html",
+          })
+        );
+      }
+
+      const anotherPageData = await Promise.all(promiseList);
+
+      for (let i = 0; i < anotherPageData.length; i++) {
+        const rawData = anotherPageData[i];
+        const { window } = new JSDOM(rawData);
+        const imageElements = window.document.querySelectorAll(
+          "div.page-link + p > img"
+        );
+        for (let index = 0; index < imageElements.length; index++) {
+          imageList.push(imageElements[index].getAttribute("src"));
+        }
+      }
+
+      const infoValid = [
+        "Tên bộ ảnh:",
+        "Người mẫu:",
+        "Tổng số ảnh:",
+        "Dung lượng:",
+        "Kích cỡ ảnh:",
+      ];
+      const invalidText = ["\n", " "];
+      const validIndex = 1;
+      const infoElement = window.document.querySelector(".box-inner-block");
+      const filterInfo = [...infoElement.childNodes]
+        .filter((n) => {
+          return n.nodeName === "#text" && !invalidText.includes(n.data);
+        })
+        .slice(validIndex, infoValid.length);
+      const infoData = filterInfo.map((x, i) => {
+        return `${infoValid[i]} ${x.data}`;
+      });
+      res.setHeader("Content-Type", "application/json");
+      // res.setHeader("Cache-Control", "s-max-age=60, stale-while-revalidate");
+      res.status(200).json({
+        downloadLink: downloadLink.getAttribute("href"),
+        imageList,
+        info: infoData,
+      });
     } catch (error) {
       res.status(400).json("");
     }
