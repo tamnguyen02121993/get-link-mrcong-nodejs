@@ -16,8 +16,11 @@ const mrcongService = {
       const textCategories = [];
       for (let index = 0; index < categoriesLength; index++) {
         const item = categories[index];
+        const splitString = item.getAttribute("href").split("/");
+        const category = splitString[splitString.length - 2];
         textCategories.push({
           name: item.textContent,
+          category,
           href: item.getAttribute("href"),
         });
       }
